@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import ReactDOM from "react-dom";
 import styled from "styled-components";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
@@ -34,12 +33,15 @@ function generateNote() {
   };
 }
 
-function isDuplicateNote(prevNote, i, notes) {
-  const note = notes[i];
-  return (
-    note._lineLayer === prevNote._lineLayer &&
-    note._lineIndex === prevNote._lineIndex
-  );
+function isValid(note, notes) {
+  return notes.find(prevNote => {
+    return (
+      prevNote._lineLayer === note._lineLayer &&
+      prevNote._lineIndex === note._lineIndex &&
+      prevNote._cutDirection === null &&
+      prevNote._type === null
+    );
+  });
 }
 
 function generateGrid(count) {
@@ -54,7 +56,11 @@ function generateGrid(count) {
     });
   }
   for (let j = 0; j < count; j++) {
-    const note = generateNote();
+    let note;
+    do {
+      note = generateNote();
+    } while (!isValid(note, notes));
+
     const prevNoteIndex = notes.findIndex(prevNote => {
       return (
         prevNote._lineLayer === note._lineLayer &&
@@ -78,6 +84,7 @@ function App({ classes }) {
             <img
               key={uniqueId++}
               src={`assets/${note._type}_${note._cutDirection}.png`}
+              alt="note block"
             />
           );
         })}
